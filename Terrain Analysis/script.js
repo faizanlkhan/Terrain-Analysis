@@ -3,15 +3,13 @@ async function loadPyodideAndPackages() {
         window.pyodide = await loadPyodide();
         await pyodide.loadPackage(["numpy", "matplotlib"]);
 
-        console.log("✅ Pyodide & Matplotlib Loaded Successfully");
+        console.log("Pyodide & Matplotlib loadedddd!");
     } catch (error) {
-        console.error("⚠️ Error loading Pyodide or Matplotlib:", error);
-        alert("Failed to load Pyodide packages. Try refreshing.");
+        console.error("Error", error);
+        alert("Error!");
     }
 }
 
-
-// Call the function to initialize Pyodide
 loadPyodideAndPackages();
 
 
@@ -36,8 +34,7 @@ async function processTIFF() {
 
             console.log(`Original Size: ${width} x ${height}`);
 
-            // 🛑 Limit large files to prevent crashes
-            let maxSize = 128; // Adjust based on performance
+            let maxSize = 128; 
             let scale = Math.min(1, maxSize / Math.max(width, height));
             let newWidth = Math.round(width * scale);
             let newHeight = Math.round(height * scale);
@@ -55,16 +52,10 @@ async function processTIFF() {
 
             console.log(`Resized to: ${newWidth} x ${newHeight}`);
 
-            // ✅ Render 2D & 3D maps first
             plot2DMap(elevationData, newWidth, newHeight);
             create3DPlot(elevationData, newWidth, newHeight);
-
-            // ✅ After successful 2D/3D, process erosion risk
             processTIFFforErosion(elevationData, newWidth, newHeight);
-
             processElevationData(elevationData, newWidth, newHeight);
-
-            // **🔥 Auto-run Landform Classification after maps are plotted 🔥**
             classifyLandformsAndPlot(elevationData, newWidth, newHeight);
             
         } catch (error) {
@@ -99,16 +90,16 @@ function plot2DMap(data, width, height) {
                 zsmooth: "best",
             },
             {
-                type: "contour", // ✅ Adding contour layer
+                type: "contour", 
                 z: elevationGrid,
                 x: x,
                 y: y,
-                colorscale: "Black", // 🔥 Ensures contrast
-                line: { width: 1 }, // Thin contour lines
+                colorscale: "Black", 
+                line: { width: 1 }, 
                 contours: {
-                    start: Math.min(...data), // Min elevation
-                    end: Math.max(...data),   // Max elevation
-                    size: (Math.max(...data) - Math.min(...data)) / 15, // Auto step
+                    start: Math.min(...data),
+                    end: Math.max(...data),   
+                    size: (Math.max(...data) - Math.min(...data)) / 15, 
                 },
             },
         ];
@@ -156,7 +147,7 @@ function create3DPlot(data, width, height) {
     }).catch(err => console.error("Error rendering 3D map:", err));
 }
 
-// 🔥 Optimized Erosion Risk Processing
+// Optimized Erosion Risk Processing
 async function processTIFFforErosion(elevationData, width, height) {
     try {
         let erosionRisk = computeErosionRisk(elevationData, width, height);
@@ -206,7 +197,7 @@ function plotErosionRisk(riskData) {
         reshapedRiskMap.push(riskMap.slice(i * width, (i + 1) * width));
     }
 
-    // 🟢 Heatmap for Erosion Risk
+
     let heatmap = {
         type: "heatmap",
         z: reshapedRiskMap,
@@ -225,21 +216,21 @@ function plotErosionRisk(riskData) {
         hoverongaps: false
     };
 
-    // 🟠 Contour lines overlaying erosion risk
+
     let contour = {
         type: "contour",
         z: reshapedRiskMap,
         x: x,
         y: y,
         contours: {
-            coloring: "lines", // 🟢 Only lines (no filled regions)
-            showlabels: true,  // 🏷 Show elevation labels
+            coloring: "lines",
+            showlabels: true, 
             labelfont: { size: 12, color: "black" },
             start: 1, // Lowest risk level
             end: 3, // Highest risk level
-            size: 1, // Step between contours
+            size: 1, 
         },
-        line: { color: "black", width: 1.5 }, // 🖤 Thicker black contour lines
+        line: { color: "black", width: 1.5 },
         hoverinfo: "none"
     };
 
@@ -253,7 +244,7 @@ function plotErosionRisk(riskData) {
         margin: { t: 50, l: 50, r: 50, b: 50 },
     };
 
-    // 📌 Plot both heatmap & contour together
+   
     Plotly.newPlot("erosionMap", [heatmap, contour], layout)
         .then(() => console.log("Erosion Map with Contour Rendered"))
         .catch(err => console.error("Error rendering Erosion Map:", err));
@@ -294,7 +285,7 @@ function computeElevationStats(elevationData, width, height) {
             slopeSum += slope;
             aspectSum += aspect;
             
-            if (slope > 10) contourCount++; // Rough estimate of contour density
+            if (slope > 10) contourCount++; 
         }
     }
 
@@ -338,11 +329,6 @@ function processElevationData(elevationData, width, height) {
     displayElevationTable(stats);
 }
 
-// Ensure this function is called after processing the TIFF file
-// processElevationData(elevationData, width, height);
-
-
-// Function to classify landforms based on elevation
 function classifyLandforms(elevationData, width, height) {
     const landformClasses = [];
     
@@ -366,7 +352,6 @@ function classifyLandforms(elevationData, width, height) {
     return landformClasses;
 }
 
-// Function to add symbols/icons on the 2D elevation map
 function classifyLandformsAndPlot() {
     if (!elevationData) {
         console.error("Elevation data not found!");
@@ -391,8 +376,8 @@ function classifyLandformsAndPlot() {
             }
 
             landformSymbols.push({
-                x: j, // Keep x as column index
-                y: rows - i, // Flip y-axis to match image
+                x: j, 
+                y: rows - i, // flip y-axis to match image
                 text: symbol
             });
         }
@@ -421,6 +406,6 @@ function classifyLandformsAndPlot() {
     Plotly.react('landformMap', [traceHeatmap], layout);
 }
 
-// 🚀 Run automatically after elevation data is processed
 setTimeout(classifyLandformsAndPlot, 1000);
+
 
